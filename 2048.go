@@ -418,6 +418,7 @@ func (board *Board) add_number() {
 type Game struct {
     board *Board
     turn int
+    score int
     start_time time.Time
 }
 
