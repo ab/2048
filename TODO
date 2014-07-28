@@ -1,0 +1,8 @@
+- figure out terminal colors, maybe in 256 color
+- keyboard raw mode
+- implement A*
+    - cost functions:
+        1. sum of all tiles
+        2. number of unassigned tiles
+        3. average value of occupied tile
+        4. score?
