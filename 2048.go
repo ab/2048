@@ -352,9 +352,12 @@ func (board *Board) add_number() {
         panic("add_number: board is full")
     }
 
-    // TODO: determine circumstances when we should add a number > 2
-
-    to_add := 2
+    var to_add int
+    if rand.Float32() < 0.9 {
+        to_add = 2
+    } else {
+        to_add = 4
+    }
 
     for {
         row_index := rand.Intn(board.rows)
