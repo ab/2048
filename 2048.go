@@ -20,7 +20,7 @@ const (
     MOVE_LEFT
 )
 
-const DEBUG = true
+const DEBUG = false
 var debug *bool = flag.Bool("debug", false, "enable debug logging")
 
 func Debugf(format string, args ...interface{}) {
@@ -76,22 +76,28 @@ func (c *Cell) printColor() {
     var escape string
     var lpad, rpad int
 
+    // TODO: conditionalize on tile >= 16384?
+
     if c.isEmpty() {
         fmt.Printf("    ")
         return
     }
 
     if c.value < 10 {
-        lpad = 3
-        rpad = 1
-    } else if c.value < 100 {
+        // 3, 1
         lpad = 2
         rpad = 1
-    } else if c.value < 1000 {
+    } else if c.value < 100 {
+        // 2, 1
         lpad = 1
         rpad = 1
-    } else if c.value < 10000 {
+    } else if c.value < 1000 {
+        // 1, 1
         lpad = 1
+        rpad = 0
+    } else if c.value < 10000 {
+        // 1, 0
+        lpad = 0
         rpad = 0
     } else {
         lpad = 0
@@ -131,25 +137,62 @@ func NewBoard(rows, cols int) *Board {
     return b
 }
 
-func (board *Board) print_row_divider() {
-    for c := 0; c < board.cols; c++ {
-        fmt.Print("+––––")
-        if DEBUG {
-            fmt.Print("–")
-        }
+func (board *Board) print_row_divider(row_index int) {
+    var left, right, cross, dash string
+
+    switch row_index {
+    case 0:
+        left = "┏"
+        right = "┓"
+        cross = "┯"
+        dash = "━"
+    case board.cols:
+        left = "┗"
+        right = "┛"
+        cross = "┷"
+        dash = "━"
+    default:
+        left = "┠"
+        cross = "┼"
+        right = "┨"
+        dash = "─"
     }
-    fmt.Println("+")
+
+    // TODO: conditionalize on tile >= 16384
+    dash_length := 4
+
+    /*
+    if DEBUG {
+        dash_length = 5
+    } else {
+        dash_length = 4
+    }
+    */
+
+    fmt.Print(left)
+    fmt.Print(strings.Repeat(dash, dash_length))
+    for c := 1; c < board.cols; c++ {
+        fmt.Print(cross)
+        fmt.Print(strings.Repeat(dash, dash_length))
+    }
+    fmt.Println(right)
 }
 
 func (board *Board) display() {
 
-    for _, row := range board.cells {
-        board.print_row_divider()
+    for row_index, row := range board.cells {
+        board.print_row_divider(row_index)
 
-        for _, cell := range row {
+        for col_index, cell := range row {
 
-            fmt.Print("|")
-            // cell.printColor()
+            if col_index == 0 {
+                fmt.Print("┃")
+            } else {
+                fmt.Print("│")
+            }
+
+            cell.printColor()
+            continue
 
             if cell.isEmpty() {
                 fmt.Print("    ")
@@ -160,6 +203,7 @@ func (board *Board) display() {
             } else {
                 fmt.Printf("%3d ", cell.value)
             }
+            /*
             if DEBUG {
                 if cell.just_merged {
                     fmt.Print("+")
@@ -167,11 +211,12 @@ func (board *Board) display() {
                     fmt.Print(" ")
                 }
             }
+            */
         }
-        fmt.Println("|")
+        fmt.Println("┃")
     }
 
-    board.print_row_divider()
+    board.print_row_divider(board.rows)
 }
 
 func (board *Board) newTurn() {
